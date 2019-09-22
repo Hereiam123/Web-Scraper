@@ -14,16 +14,26 @@ const scrapeMetatags = (text) => {
         const html = await res.text()
         const $ = cheerio.load(html)
 
-        const getMetstag = (name) => $(`meta[name=${name}]`).attr('content') || $(`meta[property="og:${name}"]`).attr('content') || $(`meta[property="twitter:${name}"]`).attr('content')
+        const getMetatag = (name) => $(`meta[name=${name}]`).attr('content') || $(`meta[property="og:${name}"]`).attr('content') || $(`meta[property="twitter:${name}"]`).attr('content')
 
         return {
             url,
-            title: $('title').first.text(),
+            title: $('title').first().text(),
             favicon: $('link[rel="shortcut icon"]').attr("href"),
-            description: $('meta[name="description"]').attr('content'),
-
+            description: getMetatag('description'),
+            image: getMetatag('image'),
+            author: getMetatag('author')
         }
     })
 
     return Promise.all(requests)
 }
+
+exports.scraper = functions.https.onRequest((request, response) => {
+    cors(request, response, async () => {
+        const body = request.body
+        const data = await scrapeMetatags(body.text)
+
+        response.send(data)
+    })
+})
