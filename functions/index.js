@@ -6,6 +6,7 @@ const cors = require("cors")({
 const cheerio = require('cheerio')
 const getUrls = require('get-urls')
 const fetch = require('node-fetch')
+const puppeteer = require('puppeteer')
 
 const scrapeMetatags = (text) => {
     const urls = Array.from(getUrls(text))
@@ -27,6 +28,24 @@ const scrapeMetatags = (text) => {
     })
 
     return Promise.all(requests)
+}
+
+const scrapeImage = async (username) => {
+    const browser = await puppeteer.launch({
+        headless: true
+    })
+
+    const page = await browser.newPage()
+
+    await page.goto('https://www.instagram.com/accounts/login/')
+
+    await page.screenshot({
+        path: '1.png'
+    })
+
+    await page.type('[name=username]', 'hellothere123')
+
+    await page.type('[name=password]', 'myPassword')
 }
 
 exports.scraper = functions.https.onRequest((request, response) => {
