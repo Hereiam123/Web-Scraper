@@ -82,6 +82,16 @@ exports.scraper = functions.https.onRequest((request, response) => {
     cors(request, response, async () => {
         const body = request.body
         //const data = await scrapeMetatags(body.text)
+        const data = await scrapeMetatags(body.text)
+
+        response.send(data)
+    })
+})
+
+exports.imageScraper = functions.https.onRequest((request, response) => {
+    cors(request, response, async () => {
+        const body = request.body
+        //const data = await scrapeMetatags(body.text)
         const data = await scrapeImage(body.text)
 
         response.send(data)
