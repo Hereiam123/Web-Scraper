@@ -7,6 +7,7 @@ const cheerio = require('cheerio')
 const getUrls = require('get-urls')
 const fetch = require('node-fetch')
 const puppeteer = require('puppeteer')
+const userInfo = require('../config/userInfo')
 
 const scrapeMetatags = (text) => {
     const urls = Array.from(getUrls(text))
@@ -43,15 +44,45 @@ const scrapeImage = async (username) => {
         path: '1.png'
     })
 
-    await page.type('[name=username]', 'hellothere123')
+    await page.type('[name=username]', userInfo.user.userName)
 
-    await page.type('[name=password]', 'myPassword')
+    await page.type('[name=password]', userInfo.user.password)
+
+    await page.screenshot({
+        path: '2.png'
+    })
+
+    await page.click('[type=submit]')
+
+    await page.waitFor(5000)
+
+    await page.goto(`https://www.instagram.com/${username}`)
+
+    await page.waitForSelector('img', {
+        visible: true
+    })
+
+    await page.screenshot({
+        path: '3.png'
+    })
+
+    const data = await page.evaluate(() => {
+        const images = document.querySelectorAll('img')
+        const urls = Array.from(images).map(v =>
+            v.src)
+        return urls
+    })
+
+    await browser.close()
+    console.log(data)
+    return data
 }
 
 exports.scraper = functions.https.onRequest((request, response) => {
     cors(request, response, async () => {
         const body = request.body
-        const data = await scrapeMetatags(body.text)
+        //const data = await scrapeMetatags(body.text)
+        const data = await scrapeImage(body.text)
 
         response.send(data)
     })
